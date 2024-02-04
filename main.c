@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:05:41 by scambier          #+#    #+#             */
-/*   Updated: 2024/02/03 22:31:32 by scambier         ###   ########.fr       */
+/*   Updated: 2024/02/04 14:04:18 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,36 +21,41 @@
 
 int	main(int argc, char **argv, char **envp)
 {
-	int	infile;
-	int	outfile;
-	int	pipe_[2]; // 0:read 1:write
+	int	files[2];
+	int	pipe_[2];
 	int	pids[2];
+	int	ret;
 
-	infile = open("InFile", O_RDONLY);
-	outfile = open("OutFile", O_TRUNC | O_CREAT | O_RDWR, 644);
-	if (pipe(pipe_))
-		printf("pipe Error\n");
-	
+	if (argc != 5)
+		return (1);
+	if (pipe(pipe_) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
 	pids[0] = fork();
+	if (pids[0] == -1)
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
 	if (pids[0] == 0)
 	{
-		dup2(infile, 0);
+		files[1] = open(argv[4], O_TRUNC | O_CREAT | O_RDWR, 777);
+		dup2(pipe_[0], 0);
+		close(pipe_[1]);
+		dup2(files[1], 1);
+		ret = str_exec(argv[3], envp);
+		exit(EXIT_SUCCESS);
+	}
+	else
+	{
+		files[0] = open(argv[1], O_RDONLY, 777);
 		dup2(pipe_[1], 1);
 		close(pipe_[0]);
-		str_exec(argv[1], envp);
+		dup2(files[0], 0);
+		ret = str_exec(argv[2], envp);
+		wait(0);
 	}
-	pids[1] = fork();
-	if (pids[1] == 0)
-	{
-		dup2(pipe_[0], 0);
-		dup2(outfile, 1);
-		close(pipe_[1]);
-		str_exec(argv[2], envp);
-	}
-	close(pipe_[0]);
-	close(pipe_[1]);
-	close(infile);
-	close(outfile);
-	waitpid(pids[0], 0, 0);
-	waitpid(pids[1], 0, 0);
+	return (0);
 }
