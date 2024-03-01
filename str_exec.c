@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:43:56 by scambier          #+#    #+#             */
-/*   Updated: 2024/02/28 20:20:00 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/01 12:14:08 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,23 @@ int	str_exec(char *str, char **envp)
 
 	path = strarr_prefixchr(envp, "PATH");
 	if (!path)
-		write(2, "no envp PATH", 13);
+		return (1);
 	paths = ft_split(path + 5, ':');
+	if (!paths)
+		return (1);
 	argv = ft_split(str, ' ');
+	if (!argv)
+	{
+		ft_strarrfree(paths);
+		return (1);	
+	}
 	cmd = get_cmd(paths, argv[0]);
 	ft_strarrfree(paths);
+	if (!cmd)
+	{
+		ft_strarrfree(argv);
+		return (1);
+	}
 	ret = execve(cmd, argv, envp);
 	free(cmd);
 	ft_strarrfree(argv);
