@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:05:41 by scambier          #+#    #+#             */
-/*   Updated: 2024/03/01 20:08:31 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/01 20:13:14 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,10 @@ int	main(int argc, char **argv, char **envp)
 	cmd2.command = argv[3];
 	cmd2.fd_out = open(argv[4], O_TRUNC | O_CREAT | O_WRONLY, 0644);
 	pipe_exe(&cmd1, &cmd2, envp);
+
+	close(cmd1.fd_in);
+	close(cmd2.fd_out);
 	wait(0);
+	
 	return (0);
 }
