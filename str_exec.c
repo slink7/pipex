@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:43:56 by scambier          #+#    #+#             */
-/*   Updated: 2024/03/01 20:22:58 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/01 20:28:41 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,18 +62,12 @@ int	str_exec(char *str, char **envp)
 	if (!paths)
 		return (1);
 	argv = ft_split(str, ' ');
-	if (!argv)
-	{
-		ft_strarrfree(paths);
+	if (!argv && ft_strarrfree(paths))
 		return (1);
-	}
 	cmd = get_cmd(paths, argv[0]);
 	ft_strarrfree(paths);
-	if (!cmd)
-	{
-		ft_strarrfree(argv);
+	if (!cmd && ft_strarrfree(argv))
 		return (1);
-	}
 	ret = execve(cmd, argv, envp);
 	free(cmd);
 	ft_strarrfree(argv);
