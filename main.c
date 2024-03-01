@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:05:41 by scambier          #+#    #+#             */
-/*   Updated: 2024/03/01 20:13:14 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/01 20:22:34 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ typedef struct s_command {
 	int		fd_out;
 }	t_command;
 
-int exe(t_command *cmd, char **envp)
+int	exe(t_command *cmd, char **envp)
 {
 	int	out;
 
@@ -39,7 +39,7 @@ int exe(t_command *cmd, char **envp)
 
 void	pipe_exe(t_command *cmd1, t_command *cmd2, char **envp)
 {
-	int pid;
+	int	pid;
 	int	fd_pipe[2];
 
 	if (pipe(fd_pipe) == -1)
@@ -63,21 +63,18 @@ void	pipe_exe(t_command *cmd1, t_command *cmd2, char **envp)
 
 int	main(int argc, char **argv, char **envp)
 {
-	t_command cmd1;
-	t_command cmd2;
+	t_command	cmd1;
+	t_command	cmd2;
 
 	if (argc != 5)
 		return (1);
-
 	cmd1.fd_in = open(argv[1], O_RDONLY);
 	cmd1.command = argv[2];
 	cmd2.command = argv[3];
 	cmd2.fd_out = open(argv[4], O_TRUNC | O_CREAT | O_WRONLY, 0644);
 	pipe_exe(&cmd1, &cmd2, envp);
-
 	close(cmd1.fd_in);
 	close(cmd2.fd_out);
 	wait(0);
-	
 	return (0);
 }
