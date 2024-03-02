@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:05:41 by scambier          #+#    #+#             */
-/*   Updated: 2024/03/01 20:22:34 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/02 01:31:29 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ typedef struct s_command {
 	int		fd_out;
 }	t_command;
 
-int	exe(t_command *cmd, char **envp)
+int	execute_command(t_command *cmd, char **envp)
 {
 	int	out;
 
@@ -51,13 +51,14 @@ void	pipe_exe(t_command *cmd1, t_command *cmd2, char **envp)
 	{
 		cmd1->fd_out = fd_pipe[1];
 		close(fd_pipe[0]);
-		exe(cmd1, envp);
+		execute_command(cmd1, envp);
+		exit(EXIT_SUCCESS);
 	}
 	else
 	{
 		cmd2->fd_in = fd_pipe[0];
 		close(fd_pipe[1]);
-		exe(cmd2, envp);
+		execute_command(cmd2, envp);
 	}
 }
 
