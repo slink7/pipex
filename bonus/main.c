@@ -6,7 +6,7 @@
 /*   By: scambier <scambier@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/03 19:05:41 by scambier          #+#    #+#             */
-/*   Updated: 2024/03/02 01:31:29 by scambier         ###   ########.fr       */
+/*   Updated: 2024/03/02 23:37:51 by scambier         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 
 #include "libft.h"
 #include "str_exec.h"
+
+#define WRITE_FLAGS 577
 
 typedef struct s_command {
 	char	*command;
@@ -37,11 +39,13 @@ int	execute_command(t_command *cmd, char **envp)
 	return (out);
 }
 
-void	pipe_exe(t_command *cmd1, t_command *cmd2, char **envp)
+void	pipe_exe(int cmdc, t_command *cmds, char **envp)
 {
 	int	pid;
 	int	fd_pipe[2];
 
+	if (cmdc < 2)
+		return ;
 	if (pipe(fd_pipe) == -1)
 		perror("pipex: pipe");
 	pid = fork();
@@ -49,33 +53,37 @@ void	pipe_exe(t_command *cmd1, t_command *cmd2, char **envp)
 		perror("pipex: fork");
 	else if (pid == 0)
 	{
-		cmd1->fd_out = fd_pipe[1];
+		cmds[0].fd_out = fd_pipe[1];
 		close(fd_pipe[0]);
-		execute_command(cmd1, envp);
-		exit(EXIT_SUCCESS);
+		execute_command(&cmds[0], envp);
 	}
 	else
 	{
-		cmd2->fd_in = fd_pipe[0];
+		cmds[1].fd_in = fd_pipe[0];
 		close(fd_pipe[1]);
-		execute_command(cmd2, envp);
+		if (cmdc == 2)
+			execute_command(&cmds[1], envp);
+		else
+			pipe_exe(cmdc - 1, cmds + 1, envp);
 	}
 }
 
 int	main(int argc, char **argv, char **envp)
 {
-	t_command	cmd1;
-	t_command	cmd2;
+	t_command	*cmds;
+	int			k;
 
-	if (argc != 5)
-		return (1);
-	cmd1.fd_in = open(argv[1], O_RDONLY);
-	cmd1.command = argv[2];
-	cmd2.command = argv[3];
-	cmd2.fd_out = open(argv[4], O_TRUNC | O_CREAT | O_WRONLY, 0644);
-	pipe_exe(&cmd1, &cmd2, envp);
-	close(cmd1.fd_in);
-	close(cmd2.fd_out);
+	cmds = malloc(sizeof(t_command) * (argc - 3));
+	if (!cmds)
+		exit(EXIT_FAILURE);
+	cmds[0].fd_in = open(argv[1], O_RDONLY);
+	k = -1;
+	while (++k < argc - 3)
+		cmds[k].command = argv[k + 2];
+	cmds[argc - 4].fd_out = open(argv[argc - 1], WRITE_FLAGS, 0644);
+	pipe_exe(argc - 3, cmds, envp);
+	close(cmds[0].fd_in);
+	close(cmds[argc - 4].fd_out);
 	wait(0);
 	return (0);
 }
